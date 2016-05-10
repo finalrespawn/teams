@@ -126,17 +126,9 @@ public Action Command_JoinTeam(int client, const char[] command, int arg)
 	int JoinTeam = StringToInt(Join);
 	
 	// We need a valid team, so don't interfere with the games behaviour
-	if (g_OneTeam && AreTeamsEmpty())
+	if (g_OneTeam && (g_ValidTeam == 0))
 	{
-		if (g_ValidTeam == 0)
-		{
-			return Plugin_Continue;
-		}
-		else if (JoinTeam == g_ValidTeam)
-		{
-			ChangeTeam(client, JoinTeam);
-			return Plugin_Handled;
-		}
+		return Plugin_Continue;
 	}
 	else if (JoinTeam == CS_TEAM_CT)
 	{
@@ -147,7 +139,6 @@ public Action Command_JoinTeam(int client, const char[] command, int arg)
 				ChangeTeam(client, CS_TEAM_CT);
 				return Plugin_Handled;
 			}
-			
 		}
 		else
 		{
@@ -208,7 +199,7 @@ public Action Command_JoinTeam(int client, const char[] command, int arg)
 
 public Action Event_PlayerTeam(Event event, const char[] name, bool dontbroadcast)
 {
-	if (g_OneTeam && AreTeamsEmpty())
+	if (g_OneTeam && (g_ValidTeam == 0))
 	{
 		int Team = event.GetInt("team");
 		
@@ -232,16 +223,6 @@ public Action Event_PlayerTeam(Event event, const char[] name, bool dontbroadcas
 /** STOCKS **/
 /************/
 
-int AreTeamsEmpty()
-{
-	if (!GetTeamClientCount(CS_TEAM_CT) && !GetTeamClientCount(CS_TEAM_T))
-	{
-		return true;
-	}
-	
-	return false;
-}
-
 void ChangeTeam(int client, int team)
 {
 	ChangeClientTeam(client, team);
@@ -255,7 +236,7 @@ bool TeamHasValidAmount(int team)
 {
 	int Difference = GetTeamClientCount(CS_TEAM_CT) - GetTeamClientCount(CS_TEAM_T);
 	
-	if ((Difference <= g_LimitTeams) && (Difference >= (0 - g_LimitTeams)))
+	if ((Difference < g_LimitTeams) && (Difference > (0 - g_LimitTeams)))
 	{
 		return true;
 	}
